@@ -9,5 +9,5 @@ if {'pytest', 'test', 'ptr'}.intersection(sys.argv):
 
 setup(description="pylogstash",
       long_description=open('README.md').read(),
-      version="0.1.11",
+      version="0.1.12",
       setup_requires=setup_requires)
