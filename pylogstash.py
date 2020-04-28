@@ -24,7 +24,15 @@ def flatten(d, parent_key='', sep='.'):
 class LogStasher:
     def __init__(self, url=None):
         if url is None:
-            self.url = os.environ.get("LOGSTASH_ENTRYPOINT", open("/cdci-resources/logstash-entrypoint").read().strip())
+            for n, m in {
+                        'env': lambda: os.environ["LOGSTASH_ENTRYPOINT"].strip(),
+                        'cdci-resources-file': lambda: open("/cdci-resources/logstash-entrypoint").read().strip(),
+                    }.items(): 
+                try:
+                    self.url = m()
+                    break
+                except Exception as e:
+                    print("failed to get logstash from",n , m)
         else:
             self.url = url
 
