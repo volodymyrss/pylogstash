@@ -47,6 +47,8 @@ class LogStasher:
 
         msg = flatten(dict(list(self.context.items()) + list(msg.items())))
 
+        print("will stash:", json.dumps(msg))
+
 
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
