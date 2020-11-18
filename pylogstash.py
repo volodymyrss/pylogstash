@@ -22,7 +22,7 @@ def flatten(d, parent_key='', sep='.'):
 
 
 class LogStasher:
-    def __init__(self, url=None):
+    def __init__(self, url=None, sep="."):
         if url is None:
             for n, m in {
                         'env': lambda: os.environ["LOGSTASH_ENTRYPOINT"].strip(),
@@ -36,6 +36,8 @@ class LogStasher:
         else:
             self.url = url
 
+        self.sep = sep
+
         self.context = {}
 
     def set_context(self, c):
@@ -45,7 +47,7 @@ class LogStasher:
         HOST, PORT = self.url.split(":")
         PORT = int(PORT)
 
-        msg = flatten(dict(list(self.context.items()) + list(msg.items())))
+        msg = flatten(dict(list(self.context.items()) + list(msg.items())), sep=self.sep)
 
         print("will stash:", json.dumps(msg))
 
