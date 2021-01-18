@@ -7,6 +7,10 @@ import click
 
 import collections
 
+import logging
+
+logger = logging.getLogger()
+
 def flatten(d, parent_key='', sep='.'):
     items = []
     for k, v in d.items():
@@ -30,10 +34,12 @@ class LogStasher:
                     }.items(): 
                 try:
                     self.url = m()
+                    logger.info("set up logstash link from", n, m)
                     break
                 except Exception as e:
-                    print("failed to get logstash from",n , m)
+                    logger.debug("failed to get logstash from",n , m)
         else:
+            logger.info("set up logstash link from argument")
             self.url = url
 
         self.sep = sep
@@ -44,28 +50,31 @@ class LogStasher:
         self.context = c
     
     def log(self, msg):
-        HOST, PORT = self.url.split(":")
-        PORT = int(PORT)
-
         msg = flatten(dict(list(self.context.items()) + list(msg.items())), sep=self.sep)
 
-        print("will stash:", json.dumps(msg))
+        if getattr(self, 'url', None) is None:
+            logger.info("logstash fallback: %s", json.dumps(msg))
+        else:
+            HOST, PORT = self.url.split(":")
+            PORT = int(PORT)
+
+            logger.debug("will stash:", json.dumps(msg))
 
 
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        except Exception as e:
-            print("[ERROR] %s\n" % repr(e)) 
-            
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            except Exception as e:
+                logger.error("[ERROR] %s\n" % repr(e)) 
+                
 
-        try:
-            sock.connect((HOST, PORT))
-        except Exception as e:
-            print("[ERROR] %s\n" % repr(e)) 
+            try:
+                sock.connect((HOST, PORT))
+            except Exception as e:
+                logger.error("[ERROR] %s\n" % repr(e)) 
 
-        sock.send(json.dumps(msg).encode())
+            sock.send(json.dumps(msg).encode())
 
-        sock.close()
+            sock.close()
 
 
 @click.command()
