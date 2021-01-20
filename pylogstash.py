@@ -9,7 +9,7 @@ import collections
 
 import logging
 
-logger = logging.getLogger()
+logger = logging.getLogger("pylogstash:" + __name__)
 
 def flatten(d, parent_key='', sep='.'):
     items = []
@@ -58,21 +58,26 @@ class LogStasher:
             HOST, PORT = self.url.split(":")
             PORT = int(PORT)
 
-            logger.debug("will stash:", json.dumps(msg))
+            logger.debug("send to logstash:", json.dumps(msg))
 
 
             try:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             except Exception as e:
-                logger.error("[ERROR] %s\n" % repr(e)) 
+                logger.error("ERROR creating socket") 
+                return
                 
 
             try:
                 sock.connect((HOST, PORT))
             except Exception as e:
-                logger.error("[ERROR] %s\n" % repr(e)) 
+                logger.error("ERROR connecting to host %s:%s %s\n", HOST, PORT, repr(e)) 
+                return
 
-            sock.send(json.dumps(msg).encode())
+            try:
+                sock.send(json.dumps(msg).encode())
+            except Exception as e:
+                logger.error()
 
             sock.close()
 
