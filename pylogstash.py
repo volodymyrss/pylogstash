@@ -34,10 +34,10 @@ class LogStasher:
                     }.items(): 
                 try:
                     self.url = m()
-                    logger.info("set up logstash link from", n, m)
+                    logger.info("set up logstash link from %s: %s", n, m)
                     break
                 except Exception as e:
-                    logger.debug("failed to get logstash from",n , m)
+                    logger.debug("failed to get logstash from %s: %s", n, m)
         else:
             logger.info("set up logstash link from argument")
             self.url = url
@@ -58,7 +58,7 @@ class LogStasher:
             HOST, PORT = self.url.split(":")
             PORT = int(PORT)
 
-            logger.debug("send to logstash:", json.dumps(msg))
+            logger.debug("send to logstash: %s", json.dumps(msg))
 
 
             try:
