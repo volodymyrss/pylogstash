@@ -50,15 +50,20 @@ class LogStasher:
         self.context = c
     
     def log(self, msg):
-        msg = flatten(dict(list(self.context.items()) + list(msg.items())), sep=self.sep)
+        if isinstance(msg, str):
+            msg_bytes = msg.encode()
+        elif isinstance(msg, dict):
+            msg_bytes = json.dumps(flatten(dict(list(self.context.items()) + list(msg.items())), sep=self.sep)).encode()
+        else:
+            raise RuntimeError("unknown type message: %s", type(msg))
 
         if getattr(self, 'url', None) is None:
-            logger.info("logstash fallback: %s", json.dumps(msg))
+            logger.info("logstash fallback: %s", msg_bytes)
         else:
             HOST, PORT = self.url.split(":")
             PORT = int(PORT)
 
-            logger.debug("send to logstash: %s", json.dumps(msg))
+            logger.debug("send to logstash: %s", msg_bytes)
 
 
             try:
@@ -75,7 +80,7 @@ class LogStasher:
                 return
 
             try:
-                sock.send(json.dumps(msg).encode())
+                sock.send(msg_bytes)
             except Exception as e:
                 logger.error()
 
